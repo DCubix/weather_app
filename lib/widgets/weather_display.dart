@@ -6,13 +6,25 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:language_code/language_code.dart';
 import 'package:unicons/unicons.dart';
+import 'package:weather_app/globals.dart';
 import 'package:weather_app/models/weather.dart';
+import 'package:weather_app/models/weather_units.dart';
 import 'package:weather_app/providers/settings_provider.dart';
 import 'package:weather_app/providers/weather_repository_provider.dart';
 import 'package:weather_app/repositories/weather_repository_base.dart';
 import 'package:weather_app/widgets/basic_responsive.dart';
-import 'package:weather_app/widgets/icon_chip.dart';
+import 'package:weather_app/widgets/info_chip.dart';
 import 'package:weather_app/widgets/info_card.dart';
+
+List<PopupMenuEntry<String>> buildWeatherProviderMenu(WidgetRef ref) {
+  return availableServices.map((service) {
+    return PopupMenuItem(
+      value: service,
+      child: Text(service),
+      onTap: () => ref.read(selectedServicePrefProvider.notifier).update(service),
+    );
+  }).toList();
+}
 
 class WeatherDisplay extends HookConsumerWidget {
   const WeatherDisplay({
@@ -41,6 +53,7 @@ class WeatherDisplay extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
@@ -70,15 +83,7 @@ class WeatherDisplay extends HookConsumerWidget {
                 ),
                 const SizedBox(width: 6),
                 PopupMenuButton(
-                  itemBuilder: (context) {
-                    return availableServices.map((service) {
-                      return PopupMenuItem(
-                        value: service,
-                        child: Text(service),
-                        onTap: () => ref.read(selectedServicePrefProvider.notifier).update(service),
-                      );
-                    }).toList();
-                  },
+                  itemBuilder: (_) => buildWeatherProviderMenu(ref),
                   child: const Icon(UniconsLine.setting, color: Colors.white),
                 ),
               ],
@@ -90,22 +95,24 @@ class WeatherDisplay extends HookConsumerWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconChip(
+            InfoChip(
               icon: Image.asset(
                 'assets/weather/${data.weatherIcon}',
                 width: 24.0,
-                color: const Color.fromARGB(200, 255, 255, 255),
+                color: cardIconColor(data.isDay),
                 alignment: Alignment.center,
               ),
               text: data.weatherDescription,
+              isDay: data.isDay,
             ),
     
             const SizedBox(width: 6),
             
             // AQI
-            IconChip(
+            InfoChip(
               icon: const Icon(UniconsLine.trees),
               text: 'AQI ${fmtDecimal.format(data.aqi)}',
+              isDay: data.isDay,
             ),
           ],
         ),
@@ -170,7 +177,7 @@ class WeatherDisplay extends HookConsumerWidget {
             valueText: '${fmtInt.format(data.windDirection)}° ${data.windDirectionCardinal}',
             icon: Container(
               decoration: BoxDecoration(
-                color: Colors.white24,
+                color: cardIconColor(data.isDay).withOpacity(0.2),
                 borderRadius: BorderRadius.circular(50),
               ),
               child: Transform.rotate(

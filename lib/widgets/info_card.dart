@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:weather_app/globals.dart';
 
 class InfoCard extends StatelessWidget {
   const InfoCard({
@@ -18,7 +19,7 @@ class InfoCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final textStyle = TextStyle(
       fontSize: 15,
-      color: isDay ? Colors.black54 : Colors.white70,
+      color: cardTextColor(isDay),
       height: 1
     );
     return Card(
@@ -46,7 +47,13 @@ class InfoCard extends StatelessWidget {
             FittedBox(
               alignment: Alignment.centerLeft,
               fit: BoxFit.scaleDown,
-              child: Text(valueText, style: textStyle.copyWith(fontSize: 21, color: isDay ? Colors.black : Colors.white)),
+              child: Text(
+                valueText,
+                style: textStyle.copyWith(
+                  fontSize: 22, color: cardIconColor(isDay),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             const Spacer(),
             if (icon != null) FittedBox(
@@ -54,7 +61,7 @@ class InfoCard extends StatelessWidget {
               fit: BoxFit.scaleDown,
               child: IconTheme(
                 data: IconThemeData(
-                  color: isDay ? Colors.black : Colors.white,
+                  color: cardIconColor(isDay),
                   size: 46,
                 ),
                 child: icon!

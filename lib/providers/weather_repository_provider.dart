@@ -21,7 +21,7 @@ final weatherRepositoryProvider = Provider<WeatherRepositoryBase>((ref) {
   switch (key) {
     case 'Weatherbit': return WeatherbitRepository();
     case 'OpenWeatherMap': return OpenWeatherMapRepository();
-    default: throw UnimplementedError('Unknown service: $key');
+    default: throw 'Unknown service: $key';
   }
 });
 
@@ -31,7 +31,7 @@ final currentLocationProvider = FutureProvider<LocationData>((ref) async {
   if (!enabled) {
     enabled = await loc.requestService();
     if (!enabled) {
-      throw Exception('Location service is disabled');
+      throw 'Location service is disabled';
     }
   }
 
@@ -39,7 +39,7 @@ final currentLocationProvider = FutureProvider<LocationData>((ref) async {
   if (permission == PermissionStatus.denied) {
     permission = await loc.requestPermission();
     if (permission != PermissionStatus.granted) {
-      throw Exception('Location permission was denied');
+      throw 'Location permission was denied';
     }
   }
 
@@ -54,7 +54,7 @@ final currentWeatherProvider = FutureProvider<Weather>((ref) async {
 
   final res = await repo.fetchCurrentWeather(location.latitude!, location.longitude!, unit);
   if (res.isError) {
-    throw Exception(res.error);
+    throw res.error!;
   }
 
   return res.data!;

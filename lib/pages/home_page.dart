@@ -49,13 +49,14 @@ class HomePage extends HookConsumerWidget {
           currWeather.when(
             loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
             error: (ex, _) {
-              final err = ex is Exception ? ex.toString() : 'Unknown error';
+              print('Error: $ex');
+              final err = ex is String ? ex : 'Unknown error';
               return Center(
                 child: BasicResponsive(
-                  mobile: _buildError(err, 1.0),
-                  tablet: _buildError(err, 0.9),
-                  desktop: _buildError(err, 0.6),
-                  desktopHQ: _buildError(err, 0.3),
+                  mobile: _buildError(err, 1.0, ref),
+                  tablet: _buildError(err, 0.9, ref),
+                  desktop: _buildError(err, 0.6, ref),
+                  desktopHQ: _buildError(err, 0.3, ref),
                 ),
               );
             },
@@ -76,7 +77,7 @@ class HomePage extends HookConsumerWidget {
     );
   }
 
-  Widget _buildError(String error, double widthFactor) {
+  Widget _buildError(String error, double widthFactor, WidgetRef ref) {
     return PercentSizedBox(
       widthFactor: widthFactor,
       child: Container(
@@ -85,16 +86,45 @@ class HomePage extends HookConsumerWidget {
           borderRadius: BorderRadius.circular(16.0),
         ),
         padding: const EdgeInsets.all(16.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(UniconsLine.exclamation_triangle, color: Colors.black87),
-            const SizedBox(width: 8.0),
-            Expanded(
-              child: Text(
-                error,
-                style: const TextStyle(color: Colors.black87, fontSize: 16.0),
-              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(UniconsLine.exclamation_triangle, color: Colors.black87),
+                const SizedBox(width: 8.0),
+                Expanded(
+                  child: Text(
+                    error,
+                    style: const TextStyle(color: Colors.black87, fontSize: 16.0),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                PopupMenuButton(
+                  itemBuilder: (_) => buildWeatherProviderMenu(ref),
+                  child: const Row(
+                    children: [
+                      Icon(UniconsLine.angle_down, color: Colors.black87),
+                      Text('Switch Provider', style: TextStyle(color: Colors.black87)),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+                TextButton.icon(
+                  onPressed: () {
+                    ref.invalidate(weatherRepositoryProvider);
+                  },
+                  icon: const Icon(UniconsLine.refresh, color: Colors.black87),
+                  label: const Text('Retry', style: TextStyle(color: Colors.black87)),
+                ),
+              ],
             ),
           ],
         ),

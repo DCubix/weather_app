@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:language_code/language_code.dart';
 import 'package:weather_app/models/payload.dart';
 import 'package:weather_app/models/weather.dart';
+import 'package:weather_app/models/weather_units.dart';
 import 'package:weather_app/repositories/weather_repository_base.dart';
 
 final _iconTranslationTable = {
