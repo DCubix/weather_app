@@ -2,6 +2,15 @@ enum WeatherUnits {
   metric,
   imperial;
 
+  String get name {
+    switch (this) {
+      case WeatherUnits.metric:
+        return 'Metric';
+      case WeatherUnits.imperial:
+        return 'Imperial';
+    }
+  }
+
   String get temperatureSymbol {
     switch (this) {
       case WeatherUnits.metric:

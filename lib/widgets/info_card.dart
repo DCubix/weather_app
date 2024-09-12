@@ -24,9 +24,7 @@ class InfoCard extends StatelessWidget {
     );
     return Card(
       elevation: 0.0,
-      color: isDay ? 
-        const Color.fromARGB(220, 255, 255, 255) :
-        const Color.fromARGB(40, 255, 255, 255),
+      color: cardColor(isDay),
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -50,7 +48,8 @@ class InfoCard extends StatelessWidget {
               child: Text(
                 valueText,
                 style: textStyle.copyWith(
-                  fontSize: 22, color: cardIconColor(isDay),
+                  fontSize: 22,
+                  color: cardIconColor(isDay),
                   fontWeight: FontWeight.w600,
                 ),
               ),

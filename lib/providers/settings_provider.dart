@@ -8,4 +8,8 @@ final selectedUnitProvider = createPrefProvider<WeatherUnits>(
   defaultValue: WeatherUnits.metric,
 );
 
-
+final selectedServicePrefProvider = createPrefProvider<String>(
+  prefs: (_) => globalPrefs,
+  prefKey: 'weather_service_key',
+  defaultValue: 'Weatherbit',
+);

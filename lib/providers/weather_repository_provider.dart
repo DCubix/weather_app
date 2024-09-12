@@ -1,6 +1,6 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:shared_preferences_riverpod/shared_preferences_riverpod.dart';
-import 'package:weather_app/main.dart';
 import 'package:weather_app/models/weather.dart';
 import 'package:weather_app/providers/settings_provider.dart';
 import 'package:weather_app/repositories/openweathermap_repository.dart';
@@ -9,12 +9,6 @@ import 'package:weather_app/repositories/wheaterbit_repository.dart';
 import 'package:location/location.dart';
 
 final availableServices = ['Weatherbit', 'OpenWeatherMap'];
-
-final selectedServicePrefProvider = createPrefProvider<String>(
-  prefs: (_) => globalPrefs,
-  prefKey: 'weather_service_key',
-  defaultValue: 'Weatherbit',
-);
 
 final weatherRepositoryProvider = Provider<WeatherRepositoryBase>((ref) {
   final key = ref.watch(selectedServicePrefProvider);
@@ -46,7 +40,11 @@ final currentLocationProvider = FutureProvider<LocationData>((ref) async {
   return loc.getLocation();
 });
 
-final currentWeatherProvider = FutureProvider<Weather>((ref) async {
+final currentWeatherProvider = FutureProvider.autoDispose<Weather>((ref) async {
+  // refresh every 30 minutes
+  final timer = Timer(const Duration(minutes: 30), () => ref.invalidateSelf());
+  ref.onDispose(() => timer.cancel());
+
   final repo = ref.watch(weatherRepositoryProvider);
   final unit = ref.watch(selectedUnitProvider);
 

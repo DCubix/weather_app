@@ -11,8 +11,8 @@ import 'package:weather_app/models/weather.dart';
 import 'package:weather_app/models/weather_units.dart';
 import 'package:weather_app/providers/settings_provider.dart';
 import 'package:weather_app/providers/weather_repository_provider.dart';
-import 'package:weather_app/repositories/weather_repository_base.dart';
 import 'package:weather_app/widgets/basic_responsive.dart';
+import 'package:weather_app/widgets/icon_and_text.dart';
 import 'package:weather_app/widgets/info_chip.dart';
 import 'package:weather_app/widgets/info_card.dart';
 
@@ -69,25 +69,41 @@ class WeatherDisplay extends HookConsumerWidget {
 
             const Spacer(),
 
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Data provided by $provider',
-                  style: whiteText.copyWith(
-                    fontSize: 14,
-                    fontStyle: FontStyle.italic,
-                    color: Colors.white54,
+            if (!isMobile(context))
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  PopupMenuButton(
+                    itemBuilder: (_) => buildWeatherProviderMenu(ref),
+                    child: IconAndText(
+                      icon: UniconsLine.server_network,
+                      text: provider,
+                      color: whiteText.color!,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 6),
-                PopupMenuButton(
-                  itemBuilder: (_) => buildWeatherProviderMenu(ref),
-                  child: const Icon(UniconsLine.setting, color: Colors.white),
-                ),
-              ],
-            ),
+                  const SizedBox(width: 6),
+                  PopupMenuButton(
+                    itemBuilder: (_) => [
+                      PopupMenuItem(
+                        value: WeatherUnits.metric,
+                        child: const Text('Metric'),
+                        onTap: () => ref.read(selectedUnitProvider.notifier).update(WeatherUnits.metric),
+                      ),
+                      PopupMenuItem(
+                        value: WeatherUnits.imperial,
+                        child: const Text('Imperial'),
+                        onTap: () => ref.read(selectedUnitProvider.notifier).update(WeatherUnits.imperial),
+                      ),
+                    ],
+                    child: IconAndText(
+                      icon: UniconsLine.calculator,
+                      text: unit.name,
+                      color: whiteText.color!,
+                    ),
+                  ),
+                ],
+              ),
           ],
         ),
     

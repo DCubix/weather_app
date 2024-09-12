@@ -4,6 +4,7 @@ import 'package:unicons/unicons.dart';
 import 'package:weather_app/models/weather.dart';
 import 'package:weather_app/providers/weather_repository_provider.dart';
 import 'package:weather_app/widgets/basic_responsive.dart';
+import 'package:weather_app/widgets/icon_and_text.dart';
 import 'package:weather_app/widgets/percent_sized_box.dart';
 import 'package:weather_app/widgets/weather_display.dart';
 
@@ -109,11 +110,9 @@ class HomePage extends HookConsumerWidget {
               children: [
                 PopupMenuButton(
                   itemBuilder: (_) => buildWeatherProviderMenu(ref),
-                  child: const Row(
-                    children: [
-                      Icon(UniconsLine.angle_down, color: Colors.black87),
-                      Text('Switch Provider', style: TextStyle(color: Colors.black87)),
-                    ],
+                  child: const IconAndText(
+                    icon: UniconsLine.angle_down,
+                    text: 'Switch Provider',
                   ),
                 ),
                 const SizedBox(width: 8.0),
