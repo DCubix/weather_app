@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:unicons/unicons.dart';
 import 'package:weather_app/models/weather.dart';
+import 'package:weather_app/models/weather_units.dart';
+import 'package:weather_app/providers/settings_provider.dart';
 import 'package:weather_app/providers/weather_repository_provider.dart';
 import 'package:weather_app/widgets/basic_responsive.dart';
 import 'package:weather_app/widgets/icon_and_text.dart';
 import 'package:weather_app/widgets/percent_sized_box.dart';
 import 'package:weather_app/widgets/weather_display.dart';
+import 'package:weather_app/widgets/weather_display_simple.dart';
 
 class HomePage extends HookConsumerWidget {
   const HomePage({super.key});
@@ -16,6 +20,9 @@ class HomePage extends HookConsumerWidget {
     final theme = Theme.of(context);
     final currWeather = ref.watch(currentWeatherProvider);
 
+    final unit = ref.watch(selectedUnitProvider);
+    final provider = ref.watch(selectedServicePrefProvider);
+
     final colorsDay = [
       theme.primaryColor,
       const Color.fromARGB(255, 122, 197, 255),
@@ -24,25 +31,127 @@ class HomePage extends HookConsumerWidget {
       const Color.fromARGB(255, 2, 22, 44),
       const Color.fromARGB(255, 9, 62, 110),
     ];
+
+    final isDay = useState<bool>(false);
+    useEffect(() {
+      currWeather.maybeWhen(
+        orElse: () {},
+        data: (data) {
+          isDay.value = data.isDay;
+        },
+      );
+      return null;
+    }, [currWeather]);
     
     return Scaffold(
       appBar: AppBar(
         title: const Text('Weather App'),
       ),
-      backgroundColor: theme.primaryColor,
-      body: Stack(
-        alignment: Alignment.center,
-        children: [
-          currWeather.maybeWhen(
-            orElse: () => const SizedBox(),
-            data: (data) => Container(
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: data.isDay ? colorsDay : colorsNight,
+                  colors: isDay.value ? colorsDay : colorsNight,
                   stops: const [0.8, 1.0],
                 ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Weather App',
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Spacer(),
+                  currWeather.when(
+                    error: (_, __) => const SizedBox(),
+                    data: (data) => WeatherDisplaySimple(data: data),
+                    loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
+                  ),
+                ],
+              ),
+            ),
+
+            // service provider popup
+            PopupMenuButton(
+              itemBuilder: (_) => buildWeatherProviderMenu(ref),
+              child: ListTile(
+                leading: const Icon(UniconsLine.server_network_alt),
+                trailing: const Icon(UniconsLine.angle_right_b),
+                title: const Text('Data Provider'),
+                subtitle: Text(provider),
+              ),
+            ),
+
+            // unit popup
+            PopupMenuButton(
+              itemBuilder: (_) => [
+                PopupMenuItem(
+                  value: WeatherUnits.metric,
+                  child: const Text('Metric'),
+                  onTap: () => ref.read(selectedUnitProvider.notifier).update(WeatherUnits.metric),
+                ),
+                PopupMenuItem(
+                  value: WeatherUnits.imperial,
+                  child: const Text('Imperial'),
+                  onTap: () => ref.read(selectedUnitProvider.notifier).update(WeatherUnits.imperial),
+                ),
+              ],
+              child: ListTile(
+                leading: const Icon(UniconsLine.ruler),
+                trailing: const Icon(UniconsLine.angle_right_b),
+                title: const Text('Unit'),
+                subtitle: Text(unit.name),
+              ),
+            ),
+            
+            const Divider(),
+
+            // refresh button
+            ListTile(
+              leading: const Icon(UniconsLine.refresh),
+              trailing: const Icon(UniconsLine.angle_right_b),
+              title: const Text('Refresh'),
+              onTap: () {
+                ref.invalidate(weatherRepositoryProvider);
+              },
+            ),
+
+            const Divider(),
+
+            // logout button
+            ListTile(
+              leading: const Icon(UniconsLine.signout),
+              trailing: const Icon(UniconsLine.angle_right_b),
+              title: const Text('Logout'),
+              onTap: () {
+                
+              },
+            ),
+          ],
+        ),
+      ),
+      backgroundColor: theme.primaryColor,
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: isDay.value ? colorsDay : colorsNight,
+                stops: const [0.8, 1.0],
               ),
             ),
           ),
@@ -50,7 +159,6 @@ class HomePage extends HookConsumerWidget {
           currWeather.when(
             loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
             error: (ex, _) {
-              print('Error: $ex');
               final err = ex is String ? ex : 'Unknown error';
               return Center(
                 child: BasicResponsive(
@@ -111,7 +219,7 @@ class HomePage extends HookConsumerWidget {
                 PopupMenuButton(
                   itemBuilder: (_) => buildWeatherProviderMenu(ref),
                   child: const IconAndText(
-                    icon: UniconsLine.angle_down,
+                    icon: Icon(UniconsLine.angle_down),
                     text: 'Switch Provider',
                   ),
                 ),

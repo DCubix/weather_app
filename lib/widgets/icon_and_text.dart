@@ -8,7 +8,7 @@ class IconAndText extends StatelessWidget {
     this.color = Colors.black87,
   });
 
-  final IconData icon;
+  final Widget icon;
   final String text;
   final Color color;
 
@@ -16,7 +16,11 @@ class IconAndText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: color),
+        IconTheme(
+          data: IconThemeData(color: color),
+          child: icon,
+        ),
+        const SizedBox(width: 4.0),
         Text(text, style: TextStyle(color: color)),
       ],
     );
