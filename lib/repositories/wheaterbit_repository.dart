@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:language_code/language_code.dart';
+import 'package:weather_app/models/forecast.dart';
 import 'package:weather_app/models/payload.dart';
-import 'package:weather_app/models/weather.dart';
+import 'package:weather_app/models/weather_summary.dart';
 import 'package:weather_app/models/weather_units.dart';
 import 'package:weather_app/repositories/weather_repository_base.dart';
 
@@ -68,13 +69,13 @@ final _iconTranslationTable = {
 };
 
 class WeatherbitRepository extends WeatherRepositoryBase {
-  WeatherbitRepository() : super(baseUrl: 'http://api.weatherbit.io/v2.0', apiKey: 'ebe329c89098489ea5eade059de29782');
+  WeatherbitRepository() : super(baseUrl: 'https://api.weatherbit.io/v2.0', apiKey: 'ebe329c89098489ea5eade059de29782');
   
   @override
   String get keyParameter => 'key';
 
   @override
-  Future<Payload<Weather>> fetchCurrentWeather(double latitude, double longitude, WeatherUnits unit) async {
+  Future<Payload<WeatherSummary>> fetchCurrentWeather(double latitude, double longitude, WeatherUnits unit) async {
     final unitConv = unit == WeatherUnits.metric ? 'M' : 'I';
     final raw = await fetchRawData('current', {
       'lang': LanguageCode.locale.languageCode,
@@ -89,8 +90,7 @@ class WeatherbitRepository extends WeatherRepositoryBase {
 
     final data = raw.data!['data'][0];
 
-    return Payload.success(Weather(
-      timeZone: data['timezone'],
+    return Payload.success(WeatherSummary(
       cityName: data['city_name'],
       countryCode: data['country_code'],
       windSpeed: data['wind_spd'],
@@ -107,14 +107,49 @@ class WeatherbitRepository extends WeatherRepositoryBase {
       pressure: _toDouble(data['pres']),
     ));
   }
-  
+ 
+  @override
+  Future<Payload<List<Forecast>>> fetchWeatherForecast(double latitude, double longitude, WeatherUnits unit) async {
+    final unitConv = unit == WeatherUnits.metric ? 'M' : 'I';
+    final raw = await fetchRawData('forecast/daily', {
+      'lang': LanguageCode.locale.languageCode,
+      'units': unitConv,
+      'lat': latitude.toString(),
+      'lon': longitude.toString(),
+      'days': '6',
+    });
+
+    if (raw.isError) {
+      return Payload.error(raw.error!);
+    }
+
+    final data = raw.data!['data'] as List<dynamic>;
+    return Payload.success(data.map((e) => _convertSingleItem(e)).toList());
+  }
+
+  Forecast _convertSingleItem(Map<String, dynamic> data) => Forecast(
+    date: DateTime.fromMillisecondsSinceEpoch(data['ts'] * 1000),
+    minTemperture: _toDouble(data['min_temp']),
+    maxTemperture: _toDouble(data['max_temp']),
+    relativeHumidity: _toDouble(data['rh']),
+    precipitation: _toDouble(data['precip']),
+    windSpeed: _toDouble(data['wind_spd']),
+    windDirection: _toDouble(data['wind_dir']),
+    windDirectionCardinal: data['wind_cdir'],
+    weatherIcon: _iconTranslationTable[data['weather']['icon']] ?? 'fair_day.png',
+    weatherDescription: data['weather']['description'],
+  );
+   
   @override
   String parseError(String body) {
     return json.decode(body)['error'] ?? 'Unknown error';
   }
 
-  double _toDouble(dynamic value) {
-    return value is double ? value : value.toDouble();
+  dynamic _toDouble(dynamic value) {
+    if (value is int) {
+      return value.toDouble();
+    }
+    return value;
   }
-  
+
 }

@@ -1,8 +1,9 @@
 import 'dart:convert';
 
 import 'package:language_code/language_code.dart';
+import 'package:weather_app/models/forecast.dart';
 import 'package:weather_app/models/payload.dart';
-import 'package:weather_app/models/weather.dart';
+import 'package:weather_app/models/weather_summary.dart';
 import 'package:weather_app/models/weather_units.dart';
 import 'package:weather_app/repositories/weather_repository_base.dart';
 
@@ -33,7 +34,7 @@ class OpenWeatherMapRepository extends WeatherRepositoryBase {
   OpenWeatherMapRepository() : super(baseUrl: 'https://api.openweathermap.org/data/3.0', apiKey: '075bbecd32fb6bb8bc751d647c381431');
 
   @override
-  Future<Payload<Weather>> fetchCurrentWeather(double latitude, double longitude, WeatherUnits unit) async {
+  Future<Payload<WeatherSummary>> fetchCurrentWeather(double latitude, double longitude, WeatherUnits unit) async {
     final raw = await fetchRawData('onecall', {
       'lat': latitude.toString(),
       'lon': longitude.toString(),
@@ -62,8 +63,7 @@ class OpenWeatherMapRepository extends WeatherRepositoryBase {
     final data = raw.data!['current'];
     final aqi = aqiPayload.data!;
 
-    return Payload.success(Weather(
-      timeZone: raw.data!['timezone'],
+    return Payload.success(WeatherSummary(
       cityName: city['name']!,
       countryCode: city['country']!,
       windSpeed: data['wind_speed'],
@@ -79,6 +79,24 @@ class OpenWeatherMapRepository extends WeatherRepositoryBase {
       aqi: aqi,
       pressure: _toDouble(data['pressure']),
     ));
+  }
+
+  @override
+  Future<Payload<List<Forecast>>> fetchWeatherForecast(double latitude, double longitude, WeatherUnits unit) async {
+    final raw = await fetchRawData('onecall', {
+      'lat': latitude.toString(),
+      'lon': longitude.toString(),
+      'exclude': 'current,minutely,hourly,alerts',
+      'units': unit == WeatherUnits.metric ? 'metric' : 'imperial',
+      'lang': LanguageCode.code.code.toLowerCase(),
+    });
+
+    if (raw.isError) {
+      return Payload.error(raw.error!);
+    }
+
+    final data = raw.data!['daily'] as List<dynamic>;
+    return Payload.success(data.map((e) => _convertSingleItem(e)).take(6).toList());
   }
 
   @override
@@ -125,8 +143,24 @@ class OpenWeatherMapRepository extends WeatherRepositoryBase {
     return compass[index % 16];
   }
 
-  double _toDouble(dynamic value) {
-    return value is double ? value : value.toDouble();
+  dynamic _toDouble(dynamic value) {
+    if (value is int) {
+      return value.toDouble();
+    }
+    return value;
   }
+
+  Forecast _convertSingleItem(Map<String, dynamic> data) => Forecast(
+    date: DateTime.fromMillisecondsSinceEpoch(data['dt'] * 1000),
+    minTemperture: _toDouble(data['temp']['min']),
+    maxTemperture: _toDouble(data['temp']['max']),
+    relativeHumidity: _toDouble(data['humidity']),
+    precipitation: _toDouble(data['rain'] ?? 0),
+    windSpeed: _toDouble(data['wind_speed']),
+    windDirection: _toDouble(data['wind_deg']),
+    windDirectionCardinal: _angleToCardinalWind(_toDouble(data['wind_deg'])),
+    weatherIcon: _iconTranslationTable[data['weather'][0]['icon']] ?? 'fair_day.png',
+    weatherDescription: data['weather'][0]['description'],
+  );
 
 }

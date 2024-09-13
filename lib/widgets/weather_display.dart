@@ -8,9 +8,11 @@ import 'package:language_code/language_code.dart';
 import 'package:unicons/unicons.dart';
 import 'package:weather_app/globals.dart';
 import 'package:weather_app/models/weather.dart';
+import 'package:weather_app/models/weather_summary.dart';
 import 'package:weather_app/models/weather_units.dart';
 import 'package:weather_app/providers/settings_provider.dart';
 import 'package:weather_app/providers/weather_repository_provider.dart';
+import 'package:weather_app/widgets/forecast_card.dart';
 import 'package:weather_app/widgets/info_chip.dart';
 import 'package:weather_app/widgets/info_card.dart';
 
@@ -51,11 +53,11 @@ class WeatherDisplay extends HookConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              '${data.cityName}, ${data.countryCode}',
+              '${data.current.cityName}, ${data.current.countryCode}',
               style: whiteText,
             ),
             Text(
-              '${fmtDecimal.format(data.temperature)}°',
+              '${fmtDecimal.format(data.current.temperature)}°',
               style: whiteText.copyWith(fontSize: 92),
             ),
           ],
@@ -67,13 +69,13 @@ class WeatherDisplay extends HookConsumerWidget {
           children: [
             InfoChip(
               icon: Image.asset(
-                'assets/weather/${data.weatherIcon}',
+                'assets/weather/${data.current.weatherIcon}',
                 width: 24.0,
-                color: cardIconColor(data.isDay),
+                color: cardIconColor(data.current.isDay),
                 alignment: Alignment.center,
               ),
-              text: data.weatherDescription,
-              isDay: data.isDay,
+              text: data.current.weatherDescription,
+              isDay: data.current.isDay,
             ),
     
             const SizedBox(width: 6),
@@ -81,22 +83,26 @@ class WeatherDisplay extends HookConsumerWidget {
             // AQI
             InfoChip(
               icon: const Icon(UniconsLine.trees),
-              text: 'AQI ${fmtDecimal.format(data.aqi)}',
-              isDay: data.isDay,
+              text: 'AQI ${fmtDecimal.format(data.current.aqi)}',
+              isDay: data.current.isDay,
             ),
           ],
         ),
     
         const SizedBox(height: 10),
 
-        _buildInfoGrid(data, unit),
+        _buildCurrentWeather(data.current, unit),
+
+        const SizedBox(height: 10),
+
+        _buildForecast(data, unit),
 
         const SizedBox(height: 64.0),
       ],
     );
   }
 
-  Widget _buildInfoGrid(Weather data, WeatherUnits unit) {
+  Widget _buildCurrentWeather(WeatherSummary data, WeatherUnits unit) {
     final fmtDecimal = NumberFormat.decimalPatternDigits(decimalDigits: 1, locale: LanguageCode.code.code);
     final fmtInt = NumberFormat.decimalPatternDigits(decimalDigits: 0, locale: LanguageCode.code.code);
 
@@ -168,6 +174,52 @@ class WeatherDisplay extends HookConsumerWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildForecast(Weather data, WeatherUnits unit) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 700),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Weather Forecast',
+            style: TextStyle(
+              fontSize: 32,
+              color: Colors.white,
+              fontWeight: FontWeight.w200,
+              height: 2.5,
+            ),
+          ),
+
+          AnimationLimiter(
+            child: GridView.builder(
+              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                maxCrossAxisExtent: 400,
+                mainAxisSpacing: 8.0,
+                crossAxisSpacing: 8.0,
+                childAspectRatio: 1.0 / 0.2,
+              ),
+              shrinkWrap: true,
+              itemCount: data.forecast.length,
+              itemBuilder: (_, index) => AnimationConfiguration.staggeredList(
+                duration: const Duration(milliseconds: 500),
+                position: index,
+                child: SlideAnimation(
+                  horizontalOffset: -20.0,
+                  child: FadeInAnimation(
+                    child: ForecastCard(
+                      data: data.forecast[index],
+                      isDay: data.current.isDay,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -151,7 +151,7 @@ class HomePage extends ConsumerWidget {
               const Spacer(),
               currWeather.when(
                 error: (_, __) => const SizedBox(),
-                data: (data) => WeatherDisplaySimple(data: data),
+                data: (data) => WeatherDisplaySimple(data: data.current),
                 loading: () => const Center(child: Loading()),
               ),
             ],

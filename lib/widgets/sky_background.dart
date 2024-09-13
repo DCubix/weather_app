@@ -26,7 +26,7 @@ class SkyBackground extends HookConsumerWidget {
       currWeather.maybeWhen(
         orElse: () {},
         data: (data) {
-          isDay.value = data.isDay;
+          isDay.value = data.current.isDay;
         },
       );
       return null;

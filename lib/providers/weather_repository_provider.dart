@@ -50,10 +50,18 @@ final currentWeatherProvider = FutureProvider.autoDispose<Weather>((ref) async {
 
   final location = await ref.watch(currentLocationProvider.future);
 
-  final res = await repo.fetchCurrentWeather(location.latitude, location.longitude, unit);
-  if (res.isError) {
-    throw res.error!;
+  final currentRes = await repo.fetchCurrentWeather(location.latitude, location.longitude, unit);
+  if (currentRes.isError) {
+    throw currentRes.error!;
   }
 
-  return res.data!;
+  final forecastRes = await repo.fetchWeatherForecast(location.latitude, location.longitude, unit);
+  if (forecastRes.isError) {
+    throw forecastRes.error!;
+  }
+  
+  return Weather(
+    current: currentRes.data!,
+    forecast: forecastRes.data!,
+  );
 });

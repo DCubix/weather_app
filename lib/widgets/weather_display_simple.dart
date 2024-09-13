@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:language_code/language_code.dart';
 import 'package:weather_app/globals.dart';
-import 'package:weather_app/models/weather.dart';
+import 'package:weather_app/models/weather_summary.dart';
 import 'package:weather_app/widgets/icon_and_text.dart';
 
 class WeatherDisplaySimple extends StatelessWidget {
@@ -11,7 +11,7 @@ class WeatherDisplaySimple extends StatelessWidget {
     required this.data,
   });
 
-  final Weather data;
+  final WeatherSummary data;
 
   @override
   Widget build(BuildContext context) {

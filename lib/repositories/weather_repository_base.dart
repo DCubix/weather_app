@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:weather_app/models/weather.dart';
+import 'package:weather_app/models/forecast.dart';
+import 'package:weather_app/models/weather_summary.dart';
 import 'package:weather_app/models/weather_units.dart';
 
 import '../models/payload.dart';
@@ -24,7 +25,8 @@ abstract class WeatherRepositoryBase {
   }
 
   String parseError(String body);
-  Future<Payload<Weather>> fetchCurrentWeather(double latitude, double longitude, WeatherUnits unit);
+  Future<Payload<WeatherSummary>> fetchCurrentWeather(double latitude, double longitude, WeatherUnits unit);
+  Future<Payload<List<Forecast>>> fetchWeatherForecast(double latitude, double longitude, WeatherUnits unit);
 
   // to specify the API key field name
   String get keyParameter;
