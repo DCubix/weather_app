@@ -158,6 +158,7 @@ class WeatherDisplay extends HookConsumerWidget {
       constraints: const BoxConstraints(maxWidth: 700),
       child: AnimationLimiter(
         child: GridView.builder(
+          physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
             maxCrossAxisExtent: 200,
             mainAxisSpacing: 8.0,
@@ -196,6 +197,7 @@ class WeatherDisplay extends HookConsumerWidget {
 
           AnimationLimiter(
             child: GridView.builder(
+              physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 400,
                 mainAxisSpacing: 8.0,
