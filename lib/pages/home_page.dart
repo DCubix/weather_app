@@ -8,7 +8,6 @@ import 'package:weather_app/providers/settings_provider.dart';
 import 'package:weather_app/providers/weather_repository_provider.dart';
 import 'package:weather_app/widgets/icon_and_text.dart';
 import 'package:weather_app/widgets/loading.dart';
-import 'package:weather_app/widgets/percent_sized_box.dart';
 import 'package:weather_app/widgets/sky_background.dart';
 import 'package:weather_app/widgets/weather_display.dart';
 import 'package:weather_app/widgets/weather_display_simple.dart';
@@ -215,10 +214,4 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildWeatherDisplay(Weather data, double widthFactor) {
-    return PercentSizedBox(
-      widthFactor: widthFactor,
-      child: WeatherDisplay(data: data),
-    );
-  }
 }
