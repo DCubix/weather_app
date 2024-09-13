@@ -112,10 +112,13 @@ class HomePage extends ConsumerWidget {
           currWeather.when(
             loading: () => const Center(child: Loading()),
             error: (ex, _) {
-              final err = ex is String ? ex : 'Unknown error';
+              final err = ex is String ? ex : 'Unknown error: "$ex"';
               return Center(
                 child: BasicResponsive(
-                  mobile: _buildError(err, 1.0, ref),
+                  mobile: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 48.0),
+                    child: _buildError(err, 1.0, ref),
+                  ),
                   tablet: _buildError(err, 0.9, ref),
                   desktop: _buildError(err, 0.6, ref),
                   desktopHQ: _buildError(err, 0.3, ref),

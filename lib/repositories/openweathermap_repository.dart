@@ -67,17 +67,17 @@ class OpenWeatherMapRepository extends WeatherRepositoryBase {
       cityName: city['name']!,
       countryCode: city['country']!,
       windSpeed: data['wind_speed'],
-      windDirection: data['wind_deg'],
-      windDirectionCardinal: _angleToCardinalWind(data['wind_deg']),
+      windDirection: _toDouble(data['wind_deg']),
+      windDirectionCardinal: _angleToCardinalWind(_toDouble(data['wind_deg'])),
       temperature: data['temp'],
       feelsLike: data['feels_like'],
-      relativeHumidity: data['humidity'],
+      relativeHumidity: _toDouble(data['humidity']),
       isDay: data['dt'] < data['sunset'],
       weatherIcon: _iconTranslationTable[data['weather'][0]['icon']] ?? 'fair_day.png',
       weatherDescription: data['weather'][0]['description'],
       precipitation: data['rain'] != null ? data['rain']['1h'] : 0,
       aqi: aqi,
-      pressure: data['pressure'],
+      pressure: _toDouble(data['pressure']),
     ));
   }
 
@@ -114,7 +114,7 @@ class OpenWeatherMapRepository extends WeatherRepositoryBase {
     final url = 'http://api.openweathermap.org/data/2.5/air_pollution?lat=$lat&lon=$lon&appid=$apiKey';
     final res = await http.get(Uri.parse(url));
     if (res.statusCode ~/ 100 == 2) {
-      return Payload.success(json.decode(res.body)['list'][0]['main']['aqi']);
+      return Payload.success(_toDouble(json.decode(res.body)['list'][0]['main']['aqi']));
     }
     return Payload.error(parseError(res.body));
   }
@@ -123,6 +123,10 @@ class OpenWeatherMapRepository extends WeatherRepositoryBase {
     const compass = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
     final index = ((deg % 360) / 22.5).round();
     return compass[index % 16];
+  }
+
+  double _toDouble(dynamic value) {
+    return value is double ? value : value.toDouble();
   }
 
 }

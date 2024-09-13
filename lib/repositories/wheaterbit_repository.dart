@@ -94,23 +94,27 @@ class WeatherbitRepository extends WeatherRepositoryBase {
       cityName: data['city_name'],
       countryCode: data['country_code'],
       windSpeed: data['wind_spd'],
-      windDirection: data['wind_dir'],
+      windDirection: _toDouble(data['wind_dir']),
       windDirectionCardinal: data['wind_cdir'],
       temperature: data['temp'],
       feelsLike: data['app_temp'],
-      relativeHumidity: data['rh'],
+      relativeHumidity: _toDouble(data['rh']),
       isDay: data['pod'] == 'd',
       weatherIcon: _iconTranslationTable[data['weather']['icon']] ?? 'fair_day.png',
       weatherDescription: data['weather']['description'],
-      precipitation: data['precip'],
-      aqi: data['aqi'],
-      pressure: data['pres'],
+      precipitation: _toDouble(data['precip']),
+      aqi: _toDouble(data['aqi']),
+      pressure: _toDouble(data['pres']),
     ));
   }
   
   @override
   String parseError(String body) {
     return json.decode(body)['error'] ?? 'Unknown error';
+  }
+
+  double _toDouble(dynamic value) {
+    return value is double ? value : value.toDouble();
   }
   
 }

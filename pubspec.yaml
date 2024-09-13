@@ -13,11 +13,11 @@ dependencies:
 
   flutter_hooks: ^0.20.5
   flutter_staggered_grid_view: ^0.7.0
+  geolocator: ^13.0.1
   hooks_riverpod: ^2.5.2
   http: ^1.2.2
   intl: ^0.19.0
   language_code: ^0.5.3+2
-  location: ^6.0.2
   riverpod: ^2.5.1
   shared_preferences: ^2.3.2
   shared_preferences_riverpod: ^0.3.0

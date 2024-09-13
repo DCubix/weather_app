@@ -1,12 +1,12 @@
 import 'dart:async';
 
+import 'package:geolocator/geolocator.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:weather_app/models/weather.dart';
 import 'package:weather_app/providers/settings_provider.dart';
 import 'package:weather_app/repositories/openweathermap_repository.dart';
 import 'package:weather_app/repositories/weather_repository_base.dart';
 import 'package:weather_app/repositories/wheaterbit_repository.dart';
-import 'package:location/location.dart';
 
 final availableServices = ['Weatherbit', 'OpenWeatherMap'];
 
@@ -19,25 +19,25 @@ final weatherRepositoryProvider = Provider<WeatherRepositoryBase>((ref) {
   }
 });
 
-final currentLocationProvider = FutureProvider<LocationData>((ref) async {
-  final loc = Location();
-  var enabled = await loc.serviceEnabled();
+final currentLocationProvider = FutureProvider<Position>((ref) async {
+  var enabled = await Geolocator.isLocationServiceEnabled();
   if (!enabled) {
-    enabled = await loc.requestService();
-    if (!enabled) {
-      throw 'Location service is disabled';
-    }
+    throw 'Location service is disabled';
   }
 
-  var permission = await loc.hasPermission();
-  if (permission == PermissionStatus.denied) {
-    permission = await loc.requestPermission();
-    if (permission != PermissionStatus.granted) {
+  var permission = await Geolocator.checkPermission();
+  if (permission == LocationPermission.denied) {
+    permission = await Geolocator.requestPermission();
+    if (permission == LocationPermission.denied) {
       throw 'Location permission was denied';
     }
   }
 
-  return loc.getLocation();
+  if (permission == LocationPermission.deniedForever) {
+    throw 'Location permissions are permanently denied.';
+  }
+
+  return Geolocator.getCurrentPosition();
 });
 
 final currentWeatherProvider = FutureProvider.autoDispose<Weather>((ref) async {
@@ -50,7 +50,7 @@ final currentWeatherProvider = FutureProvider.autoDispose<Weather>((ref) async {
 
   final location = await ref.watch(currentLocationProvider.future);
 
-  final res = await repo.fetchCurrentWeather(location.latitude!, location.longitude!, unit);
+  final res = await repo.fetchCurrentWeather(location.latitude, location.longitude, unit);
   if (res.isError) {
     throw res.error!;
   }
