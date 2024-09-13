@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather_app/pages/home_page.dart';
+import 'package:weather_app/pages/login_page.dart';
 
 late SharedPreferences globalPrefs;
 
@@ -23,7 +24,10 @@ class MyApp extends StatelessWidget {
             .copyWith(secondary: Colors.white),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      routes: {
+        '/': (_) => LoginPage(),
+        '/home': (_) => const HomePage(),
+      },
     );
   }
 }

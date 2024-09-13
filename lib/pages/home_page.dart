@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:unicons/unicons.dart';
 import 'package:weather_app/models/weather.dart';
 import 'package:weather_app/models/weather_units.dart';
+import 'package:weather_app/providers/auth_provider.dart';
 import 'package:weather_app/providers/settings_provider.dart';
 import 'package:weather_app/providers/weather_repository_provider.dart';
 import 'package:weather_app/widgets/basic_responsive.dart';
 import 'package:weather_app/widgets/icon_and_text.dart';
+import 'package:weather_app/widgets/loading.dart';
 import 'package:weather_app/widgets/percent_sized_box.dart';
+import 'package:weather_app/widgets/sky_background.dart';
 import 'package:weather_app/widgets/weather_display.dart';
 import 'package:weather_app/widgets/weather_display_simple.dart';
 
-class HomePage extends HookConsumerWidget {
+class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
   @override
@@ -23,26 +25,12 @@ class HomePage extends HookConsumerWidget {
     final unit = ref.watch(selectedUnitProvider);
     final provider = ref.watch(selectedServicePrefProvider);
 
-    final colorsDay = [
-      theme.primaryColor,
-      const Color.fromARGB(255, 122, 197, 255),
-    ];
-    final colorsNight = [
-      const Color.fromARGB(255, 2, 22, 44),
-      const Color.fromARGB(255, 9, 62, 110),
-    ];
+    ref.listen(currentUserProvider, (prev, curr) {
+      if (curr == null) {
+        Navigator.pushReplacementNamed(context, '/');
+      }
+    });
 
-    final isDay = useState<bool>(false);
-    useEffect(() {
-      currWeather.maybeWhen(
-        orElse: () {},
-        data: (data) {
-          isDay.value = data.isDay;
-        },
-      );
-      return null;
-    }, [currWeather]);
-    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Weather App'),
@@ -52,34 +40,8 @@ class HomePage extends HookConsumerWidget {
           padding: EdgeInsets.zero,
           children: [
             DrawerHeader(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: isDay.value ? colorsDay : colorsNight,
-                  stops: const [0.8, 1.0],
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Weather App',
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const Spacer(),
-                  currWeather.when(
-                    error: (_, __) => const SizedBox(),
-                    data: (data) => WeatherDisplaySimple(data: data),
-                    loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
-                  ),
-                ],
-              ),
+              padding: const EdgeInsets.all(0.0),
+              child: _buildDrawerHeaderContent(currWeather),
             ),
 
             // service provider popup
@@ -134,8 +96,8 @@ class HomePage extends HookConsumerWidget {
               leading: const Icon(UniconsLine.signout),
               trailing: const Icon(UniconsLine.angle_right_b),
               title: const Text('Logout'),
-              onTap: () {
-                
+              onTap: () async {
+                await ref.read(authStateNotifierProvider.notifier).logout();
               },
             ),
           ],
@@ -145,19 +107,10 @@ class HomePage extends HookConsumerWidget {
       body: Stack(
         alignment: Alignment.center,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: isDay.value ? colorsDay : colorsNight,
-                stops: const [0.8, 1.0],
-              ),
-            ),
-          ),
+          const SkyBackground(),
 
           currWeather.when(
-            loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
+            loading: () => const Center(child: Loading()),
             error: (ex, _) {
               final err = ex is String ? ex : 'Unknown error';
               return Center(
@@ -183,6 +136,37 @@ class HomePage extends HookConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Stack _buildDrawerHeaderContent(AsyncValue<Weather> currWeather) {
+    return Stack(
+      children: [
+        const SkyBackground(),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Weather App',
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              currWeather.when(
+                error: (_, __) => const SizedBox(),
+                data: (data) => WeatherDisplaySimple(data: data),
+                loading: () => const Center(child: Loading()),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
