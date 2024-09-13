@@ -55,16 +55,20 @@ class InfoCard extends StatelessWidget {
               ),
             ),
             const Spacer(),
-            if (icon != null) FittedBox(
-              alignment: Alignment.centerRight,
-              fit: BoxFit.scaleDown,
-              child: IconTheme(
-                data: IconThemeData(
-                  color: cardIconColor(isDay),
-                  size: 46,
-                ),
-                child: icon!
-              ),
+            if (icon != null) LayoutBuilder(
+              builder: (context, constraints) {
+                final iconSize = constraints.maxWidth / 2.6;
+                return Align(
+                  alignment: Alignment.centerRight,
+                  child: IconTheme(
+                    data: IconThemeData(
+                      color: cardIconColor(isDay),
+                      size: iconSize,
+                    ),
+                    child: icon!
+                  ),
+                );
+              },
             ),
           ],
         ),

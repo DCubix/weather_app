@@ -6,7 +6,6 @@ import 'package:weather_app/models/weather_units.dart';
 import 'package:weather_app/providers/auth_provider.dart';
 import 'package:weather_app/providers/settings_provider.dart';
 import 'package:weather_app/providers/weather_repository_provider.dart';
-import 'package:weather_app/widgets/basic_responsive.dart';
 import 'package:weather_app/widgets/icon_and_text.dart';
 import 'package:weather_app/widgets/loading.dart';
 import 'package:weather_app/widgets/percent_sized_box.dart';
@@ -114,26 +113,16 @@ class HomePage extends ConsumerWidget {
             error: (ex, _) {
               final err = ex is String ? ex : 'Unknown error: "$ex"';
               return Center(
-                child: BasicResponsive(
-                  mobile: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 48.0),
-                    child: _buildError(err, 1.0, ref),
-                  ),
-                  tablet: _buildError(err, 0.9, ref),
-                  desktop: _buildError(err, 0.6, ref),
-                  desktopHQ: _buildError(err, 0.3, ref),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 48.0),
+                  child: _buildError(err, ref),
                 ),
               );
             },
             data: (data) => SingleChildScrollView(
-              child: BasicResponsive(
-                mobile: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 48.0),
-                  child: _buildWeatherDisplay(data, 1.0),
-                ),
-                tablet: _buildWeatherDisplay(data, 0.9),
-                desktop: _buildWeatherDisplay(data, 0.6),
-                desktopHQ: _buildWeatherDisplay(data, 0.3),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 48.0),
+                child: WeatherDisplay(data: data),
               ),
             ),
           ),
@@ -173,9 +162,9 @@ class HomePage extends ConsumerWidget {
     );
   }
 
-  Widget _buildError(String error, double widthFactor, WidgetRef ref) {
-    return PercentSizedBox(
-      widthFactor: widthFactor,
+  Widget _buildError(String error, WidgetRef ref) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 500),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white70,

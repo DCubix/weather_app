@@ -40,11 +40,11 @@ class WeatherDisplaySimple extends StatelessWidget {
           icon: Image.asset(
             'assets/weather/${data.weatherIcon}',
             width: 32.0,
-            color: cardIconColor(data.isDay),
+            color: cardIconColor(false),
             alignment: Alignment.center,
           ),
           text: data.weatherDescription,
-          color: cardTextColor(data.isDay),
+          color: cardTextColor(false),
         ),
       ],
     );

@@ -6,9 +6,7 @@ import 'package:validators/validators.dart';
 import 'package:weather_app/globals.dart';
 import 'package:weather_app/providers/auth_provider.dart';
 import 'package:weather_app/providers/settings_provider.dart';
-import 'package:weather_app/widgets/basic_responsive.dart';
 import 'package:weather_app/widgets/loading.dart';
-import 'package:weather_app/widgets/percent_sized_box.dart';
 import 'package:weather_app/widgets/sky_background.dart';
 
 class LoginPage extends HookConsumerWidget {
@@ -41,14 +39,9 @@ class LoginPage extends HookConsumerWidget {
           ),
 
           SingleChildScrollView(
-            child: BasicResponsive(
-              mobile: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 54.0),
-                child: _buildLoginScreen(ref, 1.0),
-              ),
-              tablet: _buildLoginScreen(ref, 0.5),
-              desktop: _buildLoginScreen(ref, 0.36),
-              desktopHQ: _buildLoginScreen(ref, 0.24),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 54.0),
+              child: _buildLoginScreen(ref),
             ),
           ),
         ],
@@ -56,7 +49,7 @@ class LoginPage extends HookConsumerWidget {
     );
   }
 
-  Widget _buildLoginScreen(WidgetRef ref, double factor) {
+  Widget _buildLoginScreen(WidgetRef ref) {
     final emailCtrl = useTextEditingController();
     final passwordCtrl = useTextEditingController();
 
@@ -65,8 +58,8 @@ class LoginPage extends HookConsumerWidget {
     return Builder(
       builder: (context) {
         final theme = Theme.of(context);
-        return PercentSizedBox(
-          widthFactor: factor,
+        return ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
